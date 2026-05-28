@@ -7,8 +7,8 @@ const players = [
     "ロビニオ・ヴァズ", "ドニエル・マレン"
 ];
 
-// 🔴 管理者パスワード（mcsptc）
-const ADMIN_PASSWORD = "roma";
+// 🔴 管理者パスワード
+const ADMIN_PASSWORD = "mcsptc";
 
 const API_URL = "https://api.jsonbin.io/v3/b/6654a1b0ad19ca34f8705a62";
 const IP_LOOKUP_URL = "https://api.ipify.org?format=json";
