@@ -46,7 +46,7 @@ header p {
     top: 15px;
     right: 15px;
     background: transparent;
-    color: var(--text-muted);
+    color: #000; /* ⭕️ ここを var(--text-muted) から #000 に書き換え */
     border: 1px solid #333;
     padding: 6px 12px;
     border-radius: 20px;
