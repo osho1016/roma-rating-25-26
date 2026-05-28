@@ -1,10 +1,10 @@
 :root {
-    --roma-red: #6B1224;        /* より深みと重厚感のある臙脂 */
-    --roma-gold: #D49B13;       /* ギラギラ感を抑えた、落ち着いたゴールド */
-    --dark-bg: #121212;         /* 全体の背景：シックな高級感のある黒 */
+    --roma-red: #6B1224;        /* 深みのある臙脂 */
+    --roma-gold: #D49B13;       /* 落ち着いたゴールド */
+    --dark-bg: #121212;         /* 全体の背景：シックな黒 */
     --card-bg: #1A1A1A;         /* カードの背景：わずかに明るい黒 */
-    --text-primary: #E0E0E0;    /* メインの文字色：目に優しいオフホワイト */
-    --text-muted: #A0A0A0;      /* 補足の文字色：落ち着いたグレー */
+    --text-primary: #E0E0E0;    /* メインの文字色：オフホワイト */
+    --text-muted: #A0A0A0;      /* 補足の文字色：グレー */
 }
 
 body {
@@ -16,7 +16,7 @@ body {
     letter-spacing: 0.03em;
 }
 
-/* ヘッダーエリア */
+/* ヘッダー */
 header {
     background: linear-gradient(135deg, #26050C 0%, #121212 100%);
     border-bottom: 2px solid var(--roma-red);
@@ -40,7 +40,7 @@ header p {
     margin: 0;
 }
 
-/* 管理者画面へボタン（右上のひかえめなボタン） */
+/* 管理者画面へボタン */
 #go-admin-btn {
     position: absolute;
     top: 15px;
@@ -67,7 +67,7 @@ main {
     padding: 0 20px 60px 20px;
 }
 
-/* 選手カード（ここを一番シックにしました） */
+/* 選手カード */
 .player-card {
     background-color: var(--card-bg);
     margin-bottom: 16px;
@@ -90,30 +90,56 @@ main {
     margin-bottom: 14px;
 }
 
-/* スライダーコントロール */
+/* スライダーコントロール全体 */
 .score-control {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px; /* ボタン追加に伴いバランス調整 */
 }
 
 .score-control input[type="range"] {
     flex: 1;
-    accent-color: var(--roma-red);
     background: #333;
     height: 6px;
     border-radius: 3px;
     cursor: pointer;
 }
 
+/* 🌟 追加したプラス・マイナスボタンの見た目 */
+.step-btn {
+    background-color: #252525;
+    color: var(--text-primary);
+    border: 1px solid #333;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.step-btn:hover {
+    border-color: var(--text-muted);
+    background-color: #333;
+}
+
+.step-btn:active {
+    transform: scale(0.9);
+    background-color: #444;
+}
+
 /* 点数の数字表示 */
 .score-val {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--roma-gold); /* 数字をゴールドにしてアクセントに */
     min-width: 45px;
     text-align: right;
-    font-variant-numeric: tabular-nums; /* 数字の幅を固定して動いた時のガタつきを防止 */
+    font-variant-numeric: tabular-nums;
 }
 
 /* 送信ボタン */
@@ -126,7 +152,7 @@ main {
     padding: 16px;
     font-size: 1.1rem;
     font-weight: 700;
-    border-radius: 30px; /* 丸みを持たせてモダンに */
+    border-radius: 30px;
     cursor: pointer;
     margin-top: 30px;
     box-shadow: 0 4px 15px rgba(107, 18, 36, 0.3);
@@ -146,7 +172,7 @@ main {
 .page { display: block; }
 .hidden { display: none !important; }
 
-/* 管理者ログイン画面 */
+/* 管理者ログイン */
 .login-box {
     background-color: var(--card-bg);
     padding: 40px 30px;
