@@ -7,10 +7,10 @@ const players = [
     "ロビニオ・ヴァズ", "ドニエル・マレン"
 ];
 
-// 🔴 管理者パスワード（お好きな半角英数字に変えてください）
+// 🔴 管理者パスワードを「mcsptc」に書き換えました
 const ADMIN_PASSWORD = "mcsptc";
 
-// 🔑 面倒な暗号キーが不要な、新しいデータ保存場所を設定しました
+// 🔑 kvdb.ioのデータ保存場所を設定
 const API_URL = "https://kvdb.io/MNY6g6b6WwYshYfSgYfH7B/roma_ratings_2026";
 const IP_LOOKUP_URL = "https://api.ipify.org?format=json";
 
@@ -45,7 +45,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         const currentIp = ipData.ip;
 
         const res = await fetch(API_URL);
-        const allVotes = await res.json();
+        let allVotes = [];
+        if (res.ok) {
+            allVotes = await res.json();
+        }
+        if (!Array.isArray(allVotes)) allVotes = [];
 
         const isIpVoted = allVotes.some(vote => vote._ip === currentIp);
         if (isIpVoted) {
@@ -59,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function setButtonToVoted() {
     const btn = document.getElementById("submit-btn");
-    btn.innerText = "投票済みです";
+    btn.innerText = "投票済みです（1人1回まで）";
     btn.disabled = true;
 }
 
@@ -109,7 +113,9 @@ async function submitRatings() {
         let allVotes = [];
         try {
             const res = await fetch(API_URL);
-            allVotes = await res.json();
+            if (res.ok) {
+                allVotes = await res.json();
+            }
             if (!Array.isArray(allVotes)) allVotes = [];
         } catch(e) {
             allVotes = [];
@@ -131,7 +137,8 @@ async function submitRatings() {
         allVotes.push(currentRatings);
         
         await fetch(API_URL, {
-            method: "POST", // kvdb.io用にシンプルな保存方式に変更
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(allVotes)
         });
 
@@ -171,23 +178,26 @@ async function loginAdmin() {
 
     try {
         const res = await fetch(API_URL);
-        const allVotes = await res.json();
+        let allVotes = [];
+        
+        if (res.ok) {
+            allVotes = await res.json();
+        }
+        if (!Array.isArray(allVotes)) allVotes = [];
 
-        document.getElementById("total-votes").innerText = Array.isArray(allVotes) ? allVotes.length : 0;
+        document.getElementById("total-votes").innerText = allVotes.length;
 
         const totalScores = {};
         players.forEach(p => totalScores[p] = { sum: 0, count: 0 });
 
-        if (Array.isArray(allVotes)) {
-            allVotes.forEach(vote => {
-                players.forEach(p => {
-                    if (vote[p] !== undefined) {
-                        totalScores[p].sum += vote[p];
-                        totalScores[p].count += 1;
-                    }
-                });
+        allVotes.forEach(vote => {
+            players.forEach(p => {
+                if (vote[p] !== undefined) {
+                    totalScores[p].sum += vote[p];
+                    totalScores[p].count += 1;
+                }
             });
-        }
+        });
 
         const tbody = document.getElementById("result-tbody");
         tbody.innerHTML = "";
@@ -203,6 +213,6 @@ async function loginAdmin() {
         document.getElementById("admin-view-page").classList.remove("hidden");
 
     } catch (e) {
-        alert("データの読み込みに失敗しました。まだ投票データがない可能性があります。");
+        alert("データの読み込みに失敗しました。接続環境を確認してください。");
     }
 }
