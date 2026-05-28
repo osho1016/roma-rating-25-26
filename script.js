@@ -7,10 +7,11 @@ const players = [
     "ロビニオ・ヴァズ", "ドニエル・マレン"
 ];
 
-// 🔴 管理者パスワード
+// 🔴 管理者パスワード（お好きな半角英数字に変えてください）
 const ADMIN_PASSWORD = "mcsptc";
 
-const API_URL = "https://api.jsonbin.io/v3/b/6654a1b0ad19ca34f8705a62";
+// 🔑 面倒な暗号キーが不要な、新しいデータ保存場所を設定しました
+const API_URL = "https://kvdb.io/MNY6g6b6WwYshYfSgYfH7B/roma_ratings_2026";
 const IP_LOOKUP_URL = "https://api.ipify.org?format=json";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -20,7 +21,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const card = document.createElement("div");
         card.className = "player-card";
         
-        // 🌟 左右に 0.1 ずつ調整できるボタン（adjustScore）を配置しました
         card.innerHTML = `
             <div class="player-name">${player}</div>
             <div class="score-control">
@@ -31,8 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             </div>
         `;
         listContainer.appendChild(card);
-        
-        // 画面を開いた瞬間（初期値3.0）の「暗い赤」を適用
         updateScoreVal(index, 3.0); 
     });
 
@@ -46,9 +44,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const ipData = await ipRes.json();
         const currentIp = ipData.ip;
 
-        const res = await fetch(API_URL, { headers: { "X-Master-Key": "$2b$10$DEMO_KEY_DONT_USE_IN_PROD_IF_SECRET" }});
-        const data = await res.json();
-        const allVotes = data.record || [];
+        const res = await fetch(API_URL);
+        const allVotes = await res.json();
 
         const isIpVoted = allVotes.some(vote => vote._ip === currentIp);
         if (isIpVoted) {
@@ -56,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             localStorage.setItem("roma_voted_2026", "true");
         }
     } catch (e) {
-        console.log("事前IPチェックをスキップしました");
+        console.log("事前チェックをスキップしました");
     }
 });
 
@@ -64,42 +61,33 @@ function setButtonToVoted() {
     const btn = document.getElementById("submit-btn");
     btn.innerText = "投票済みです";
     btn.disabled = true;
-    btn.style.backgroundColor = "#ccc";
-    btn.style.boxShadow = "none";
 }
 
-// 🌟 スライダーを動かしたとき、またはボタンを押したときに「数字とスライダーの色」を連動させる関数
 function updateScoreVal(index, val) {
     const scoreElement = document.getElementById(`val-${index}`);
     const num = parseFloat(val);
     
-    // 数字を表示
     scoreElement.innerText = num.toFixed(1);
 
-    // 3.0〜10.0 の進捗度 (0.0 〜 1.0)
     const progress = (num - 3.0) / (10.0 - 3.0);
 
-    // 🌟 低得点（暗い赤） ⇄ 高得点（明るい緑）のグラデーション計算
     const r = Math.round(100 + (50 - 100) * progress);
     const g = Math.round(20 + (220 - 20) * progress);
     const b = Math.round(30 + (90 - 30) * progress);
 
-    // 数字とスライダーのつまみ色にリアルタイム適用してキープ
     scoreElement.style.color = `rgb(${r}, ${g}, ${b})`;
     document.getElementById(`p-${index}`).style.accentColor = `rgb(${r}, ${g}, ${b})`;
 }
 
-// 🌟 プラス・マイナスボタンが押されたときに 0.1 ずつ増減させる関数
 function adjustScore(index, step) {
     const slider = document.getElementById(`p-${index}`);
     let newVal = parseFloat(slider.value) + step;
     
-    // 3.0〜10.0 の範囲を超えないようにガード
     if (newVal < 3.0) newVal = 3.0;
     if (newVal > 10.0) newVal = 10.0;
     
     slider.value = newVal.toFixed(1);
-    updateScoreVal(index, slider.value); // 色と数字を連動
+    updateScoreVal(index, slider.value);
 }
 
 async function submitRatings() {
@@ -118,10 +106,14 @@ async function submitRatings() {
         const ipData = await ipRes.json();
         const currentIp = ipData.ip;
 
-        const res = await fetch(API_URL, { headers: { "X-Master-Key": "$2b$10$DEMO_KEY_DONT_USE_IN_PROD_IF_SECRET" }});
-        const data = await res.json();
-        let allVotes = data.record || [];
-        if (!Array.isArray(allVotes)) allVotes = [];
+        let allVotes = [];
+        try {
+            const res = await fetch(API_URL);
+            allVotes = await res.json();
+            if (!Array.isArray(allVotes)) allVotes = [];
+        } catch(e) {
+            allVotes = [];
+        }
 
         const isIpVoted = allVotes.some(vote => vote._ip === currentIp);
         if (isIpVoted) {
@@ -137,12 +129,9 @@ async function submitRatings() {
         });
 
         allVotes.push(currentRatings);
+        
         await fetch(API_URL, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Master-Key": "$2b$10$DEMO_KEY_DONT_USE_IN_PROD_IF_SECRET"
-            },
+            method: "POST", // kvdb.io用にシンプルな保存方式に変更
             body: JSON.stringify(allVotes)
         });
 
@@ -181,23 +170,24 @@ async function loginAdmin() {
     }
 
     try {
-        const res = await fetch(API_URL, { headers: { "X-Master-Key": "$2b$10$DEMO_KEY_DONT_USE_IN_PROD_IF_SECRET" }});
-        const data = await res.json();
-        const allVotes = data.record || [];
+        const res = await fetch(API_URL);
+        const allVotes = await res.json();
 
-        document.getElementById("total-votes").innerText = allVotes.length;
+        document.getElementById("total-votes").innerText = Array.isArray(allVotes) ? allVotes.length : 0;
 
         const totalScores = {};
         players.forEach(p => totalScores[p] = { sum: 0, count: 0 });
 
-        allVotes.forEach(vote => {
-            players.forEach(p => {
-                if (vote[p] !== undefined) {
-                    totalScores[p].sum += vote[p];
-                    totalScores[p].count += 1;
-                }
+        if (Array.isArray(allVotes)) {
+            allVotes.forEach(vote => {
+                players.forEach(p => {
+                    if (vote[p] !== undefined) {
+                        totalScores[p].sum += vote[p];
+                        totalScores[p].count += 1;
+                    }
+                });
             });
-        });
+        }
 
         const tbody = document.getElementById("result-tbody");
         tbody.innerHTML = "";
@@ -213,6 +203,6 @@ async function loginAdmin() {
         document.getElementById("admin-view-page").classList.remove("hidden");
 
     } catch (e) {
-        alert("データの読み込みに失敗しました。");
+        alert("データの読み込みに失敗しました。まだ投票データがない可能性があります。");
     }
 }
