@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function setButtonToVoted() {
     const btn = document.getElementById("submit-btn");
-    btn.innerText = "投票済みです（1人1回まで）";
+    btn.innerText = "投票済みです";
     btn.disabled = true;
 }
 
