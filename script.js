@@ -7,8 +7,8 @@ const players = [
     "ロビニオ・ヴァズ", "ドニエル・マレン"
 ];
 
-// 🔴 管理者パスワード（好きな文字に変えてください）
-const ADMIN_PASSWORD = "mcsptc";
+// 🔴 管理者パスワード（mcsptc）
+const ADMIN_PASSWORD = "roma";
 
 const API_URL = "https://api.jsonbin.io/v3/b/6654a1b0ad19ca34f8705a62";
 const IP_LOOKUP_URL = "https://api.ipify.org?format=json";
@@ -19,14 +19,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     players.forEach((player, index) => {
         const card = document.createElement("div");
         card.className = "player-card";
+        
+        // 🌟 左右に 0.1 ずつ調整できるボタン（adjustScore）を配置しました
         card.innerHTML = `
             <div class="player-name">${player}</div>
             <div class="score-control">
+                <button class="step-btn" onclick="adjustScore(${index}, -0.1)">−</button>
                 <input type="range" id="p-${index}" min="3.0" max="10.0" step="0.1" value="3.0" oninput="updateScoreVal(${index}, this.value)">
+                <button class="step-btn" onclick="adjustScore(${index}, 0.1)">＋</button>
                 <span id="val-${index}" class="score-val">3.0</span>
             </div>
         `;
         listContainer.appendChild(card);
+        
+        // 画面を開いた瞬間（初期値3.0）の「暗い赤」を適用
+        updateScoreVal(index, 3.0); 
     });
 
     if (localStorage.getItem("roma_voted_2026")) {
@@ -61,28 +68,38 @@ function setButtonToVoted() {
     btn.style.boxShadow = "none";
 }
 
+// 🌟 スライダーを動かしたとき、またはボタンを押したときに「数字とスライダーの色」を連動させる関数
 function updateScoreVal(index, val) {
     const scoreElement = document.getElementById(`val-${index}`);
     const num = parseFloat(val);
     
-    // 数字を画面に表示
+    // 数字を表示
     scoreElement.innerText = num.toFixed(1);
 
-    // 3.0〜10.0 の進捗度 (0.0 〜 1.0) を計算
+    // 3.0〜10.0 の進捗度 (0.0 〜 1.0)
     const progress = (num - 3.0) / (10.0 - 3.0);
 
-    // 【グラデーション計算】
-    // 3.0（低得点）：渋いミディアムグレー (120, 120, 120)
-    // 10.0（高得点）：鮮やかなローマゴールド (241, 181, 34)
-    const r = Math.round(100 + (50 - 100) * progress);   // 赤：100（暗め） から 50 へ減少
-    const g = Math.round(20 + (220 - 20) * progress);    // 緑：20（ほぼ無し） から 220 へ大増量！
-    const b = Math.round(30 + (90 - 30) * progress);     // 青：30 から 90 へ微増
+    // 🌟 低得点（暗い赤） ⇄ 高得点（明るい緑）のグラデーション計算
+    const r = Math.round(100 + (50 - 100) * progress);
+    const g = Math.round(20 + (220 - 20) * progress);
+    const b = Math.round(30 + (90 - 30) * progress);
 
-    // 色をリアルタイムに適用（指を離したあともこの色が維持されます）
+    // 数字とスライダーのつまみ色にリアルタイム適用してキープ
     scoreElement.style.color = `rgb(${r}, ${g}, ${b})`;
-
-    // 🌟【ここを追加】スライダー（つまみ）の色も同じ色に変更してキープ！
     document.getElementById(`p-${index}`).style.accentColor = `rgb(${r}, ${g}, ${b})`;
+}
+
+// 🌟 プラス・マイナスボタンが押されたときに 0.1 ずつ増減させる関数
+function adjustScore(index, step) {
+    const slider = document.getElementById(`p-${index}`);
+    let newVal = parseFloat(slider.value) + step;
+    
+    // 3.0〜10.0 の範囲を超えないようにガード
+    if (newVal < 3.0) newVal = 3.0;
+    if (newVal > 10.0) newVal = 10.0;
+    
+    slider.value = newVal.toFixed(1);
+    updateScoreVal(index, slider.value); // 色と数字を連動
 }
 
 async function submitRatings() {
@@ -108,7 +125,7 @@ async function submitRatings() {
 
         const isIpVoted = allVotes.some(vote => vote._ip === currentIp);
         if (isIpVoted) {
-            alert("すでに投票されています。");
+            alert("このネットワークからはすでに投票されています。");
             localStorage.setItem("roma_voted_2026", "true");
             location.reload();
             return;
