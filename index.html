@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AS ローマ 2025-2026 シーズン選手採点</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="voter-page" class="page">
+        <header>
+            <h1>ASローマ 2025-2026<br>選手採点</h1>
+            <p>今シーズンの選手たちを採点してみよう（3.0〜10.0点）</p>
+            <button id="go-admin-btn" onclick="showAdminLogin()">管理者画面へ</button>
+        </header>
+
+        <main>
+            <form id="rating-form">
+                <div id="player-list">
+                    </div>
+                <button type="button" id="submit-btn" onclick="submitRatings()">採点を送信する</button>
+            </form>
+        </main>
+    </div>
+
+    <div id="admin-login-page" class="page hidden">
+        <main class="login-box">
+            <h2>管理者ログイン</h2>
+            <input type="password" id="admin-password" placeholder="パスワードを入力">
+            <div class="btn-group">
+                <button onclick="backToVote()">戻る</button>
+                <button onclick="loginAdmin()">ログイン</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="admin-view-page" class="page hidden">
+        <header>
+            <h1>【管理者用】集計結果一覧</h1>
+            <p>現在の総投票数: <span id="total-votes">0</span> 票</p>
+            <button onclick="logoutAdmin()">ログアウト</button>
+        </header>
+        <main>
+            <div class="table-container">
+                <table id="result-table">
+                    <thead>
+                        <tr>
+                            <th>選手名</th>
+                            <th>平均評点</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-tbody">
+                        </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

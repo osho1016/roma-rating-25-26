@@ -1,0 +1,239 @@
+:root {
+    --roma-red: #6B1224;        /* より深みと重厚感のある臙脂 */
+    --roma-gold: #D49B13;       /* ギラギラ感を抑えた、落ち着いたゴールド */
+    --dark-bg: #121212;         /* 全体の背景：シックな高級感のある黒 */
+    --card-bg: #1A1A1A;         /* カードの背景：わずかに明るい黒 */
+    --text-primary: #E0E0E0;    /* メインの文字色：目に優しいオフホワイト */
+    --text-muted: #A0A0A0;      /* 補足の文字色：落ち着いたグレー */
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--dark-bg);
+    margin: 0;
+    padding: 0;
+    color: var(--text-primary);
+    letter-spacing: 0.03em;
+}
+
+/* ヘッダーエリア */
+header {
+    background: linear-gradient(135deg, #26050C 0%, #121212 100%);
+    border-bottom: 2px solid var(--roma-red);
+    text-align: center;
+    padding: 40px 20px;
+    position: relative;
+}
+
+header h1 {
+    margin: 0 0 12px 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* 管理者画面へボタン（右上のひかえめなボタン） */
+#go-admin-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid #333;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+#go-admin-btn:hover {
+    color: #fff;
+    border-color: var(--roma-gold);
+}
+
+/* メインコンテンツ枠 */
+main {
+    max-width: 550px;
+    margin: 30px auto;
+    padding: 0 20px 60px 20px;
+}
+
+/* 選手カード（ここを一番シックにしました） */
+.player-card {
+    background-color: var(--card-bg);
+    margin-bottom: 16px;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid #252525;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.player-card:hover {
+    border-color: var(--roma-red);
+    transform: translateY(-1px);
+}
+
+.player-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #FFF;
+    margin-bottom: 14px;
+}
+
+/* スライダーコントロール */
+.score-control {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.score-control input[type="range"] {
+    flex: 1;
+    accent-color: var(--roma-red);
+    background: #333;
+    height: 6px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+/* 点数の数字表示 */
+.score-val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--roma-gold); /* 数字をゴールドにしてアクセントに */
+    min-width: 45px;
+    text-align: right;
+    font-variant-numeric: tabular-nums; /* 数字の幅を固定して動いた時のガタつきを防止 */
+}
+
+/* 送信ボタン */
+#submit-btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, var(--roma-red) 0%, #500B1A 100%);
+    color: #fff;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 30px; /* 丸みを持たせてモダンに */
+    cursor: pointer;
+    margin-top: 30px;
+    box-shadow: 0 4px 15px rgba(107, 18, 36, 0.3);
+    transition: all 0.2s ease;
+}
+
+#submit-btn:hover {
+    opacity: 0.9;
+    box-shadow: 0 6px 20px rgba(107, 18, 36, 0.5);
+}
+
+#submit-btn:active {
+    transform: scale(0.98);
+}
+
+/* ページ切り替え */
+.page { display: block; }
+.hidden { display: none !important; }
+
+/* 管理者ログイン画面 */
+.login-box {
+    background-color: var(--card-bg);
+    padding: 40px 30px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #252525;
+    margin-top: 80px;
+}
+
+.login-box h2 {
+    margin-top: 0;
+    color: #fff;
+    font-size: 1.4rem;
+}
+
+.login-box input {
+    width: 80%;
+    padding: 12px;
+    margin: 20px 0;
+    font-size: 1rem;
+    background-color: #121212;
+    border: 1px solid #333;
+    color: #fff;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.login-box input:focus {
+    border-color: var(--roma-gold);
+    outline: none;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-group button, #admin-view-page button {
+    padding: 10px 24px;
+    border: 1px solid #444;
+    border-radius: 20px;
+    background-color: transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-group button:last-child {
+    background-color: var(--roma-red);
+    border-color: var(--roma-red);
+}
+
+.btn-group button:hover, #admin-view-page button:hover {
+    border-color: var(--roma-gold);
+    color: #fff;
+}
+
+/* 管理者結果テーブル */
+.table-container {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    border: 1px solid #252525;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #252525;
+}
+
+th {
+    color: var(--roma-gold);
+    font-weight: 700;
+    border-bottom: 2px solid var(--roma-red);
+}
+
+td strong {
+    color: var(--roma-gold);
+    font-size: 1.1rem;
+}
