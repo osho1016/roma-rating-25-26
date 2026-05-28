@@ -159,6 +159,16 @@ main {
     transition: all 0.2s ease;
 }
 
+/* ⭕️ #submit-btn のすぐ下（140行目付近）に追加 */
+#submit-btn:disabled {
+    background: #333333 !important; /* 鮮やかな赤から渋いダークグレーに強制変更 */
+    color: #777777 !important;       /* 文字色もくすんだグレーに */
+    border: 1px solid #444 !important;
+    box-shadow: none !important;     /* 高級感のある光沢を消す */
+    cursor: not-allowed;             /* マウスを乗せたときに禁止マークにする */
+    transform: none !important;      /* クリックしても凹まないようにする */
+}
+
 #submit-btn:hover {
     opacity: 0.9;
     box-shadow: 0 6px 20px rgba(107, 18, 36, 0.5);
