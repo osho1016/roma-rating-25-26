@@ -10,8 +10,8 @@ const players = [
 // 🔴 管理者パスワード
 const ADMIN_PASSWORD = "mcsptc";
 
-// 🔑 確実にまっさらな状態から始めるため、保存場所のURLの末尾を「_v2」に変更しました
-const API_URL = "https://kvdb.io/MNY6g6b6WwYshYfSgYfH7B/roma_ratings_2026_v2";
+// 🔑 完全にリフレッシュするため、URLの末尾を「_v3」に新設しました
+const API_URL = "https://kvdb.io/MNY6g6b6WwYshYfSgYfH7B/roma_ratings_2026_v3";
 const IP_LOOKUP_URL = "https://api.ipify.org?format=json";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -33,8 +33,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         listContainer.appendChild(card);
         updateScoreVal(index, 3.0); 
     });
-
-    // 🌟 テストしやすくするため、開発中はローカルストレージによる「投票済みガード」を一時的に無効化、または緩めています
 });
 
 function setButtonToVoted() {
@@ -88,7 +86,7 @@ async function submitRatings() {
             allVotes = [];
         }
 
-        const currentRatings = { _id: Date.now() }; // 識別用に時間を付与
+        const currentRatings = { _id: Date.now() };
         players.forEach((player, index) => {
             currentRatings[player.trim()] = parseFloat(document.getElementById(`p-${index}`).value);
         });
@@ -149,12 +147,15 @@ async function loginAdmin() {
         players.forEach(p => totalScores[p.trim()] = { sum: 0, count: 0 });
 
         allVotes.forEach(vote => {
-            // 各投票データのキー（選手名）をループして、前後の余計な空白を排除しながら集計
             Object.keys(vote).forEach(key => {
                 const cleanKey = key.trim();
                 if (totalScores[cleanKey] !== undefined) {
-                    totalScores[cleanKey].sum += vote[key];
-                    totalScores[cleanKey].count += 1;
+                    // 🌟 ここが今回の肝です！文字として届いた点数を、強制的に「数字（parseFloat）」に変換して足し算します
+                    const scoreNum = parseFloat(vote[key]);
+                    if (!isNaN(scoreNum)) {
+                        totalScores[cleanKey].sum += scoreNum;
+                        totalScores[cleanKey].count += 1;
+                    }
                 }
             });
         });
