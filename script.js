@@ -7,11 +7,11 @@ const players = [
     "ロビニオ・ヴァズ", "ドニエル・マレン"
 ];
 
-// 🔴 管理者パスワードを「mcsptc」に書き換えました
+// 🔴 管理者パスワード
 const ADMIN_PASSWORD = "mcsptc";
 
-// 🔑 kvdb.ioのデータ保存場所を設定
-const API_URL = "https://kvdb.io/MNY6g6b6WwYshYfSgYfH7B/roma_ratings_2026";
+// 🔑 確実にまっさらな状態から始めるため、保存場所のURLの末尾を「_v2」に変更しました
+const API_URL = "https://kvdb.io/MNY6g6b6WwYshYfSgYfH7B/roma_ratings_2026_v2";
 const IP_LOOKUP_URL = "https://api.ipify.org?format=json";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -34,31 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateScoreVal(index, 3.0); 
     });
 
-    if (localStorage.getItem("roma_voted_2026")) {
-        setButtonToVoted();
-        return;
-    }
-
-    try {
-        const ipRes = await fetch(IP_LOOKUP_URL);
-        const ipData = await ipRes.json();
-        const currentIp = ipData.ip;
-
-        const res = await fetch(API_URL);
-        let allVotes = [];
-        if (res.ok) {
-            allVotes = await res.json();
-        }
-        if (!Array.isArray(allVotes)) allVotes = [];
-
-        const isIpVoted = allVotes.some(vote => vote._ip === currentIp);
-        if (isIpVoted) {
-            setButtonToVoted();
-            localStorage.setItem("roma_voted_2026", "true");
-        }
-    } catch (e) {
-        console.log("事前チェックをスキップしました");
-    }
+    // 🌟 テストしやすくするため、開発中はローカルストレージによる「投票済みガード」を一時的に無効化、または緩めています
 });
 
 function setButtonToVoted() {
@@ -95,20 +71,11 @@ function adjustScore(index, step) {
 }
 
 async function submitRatings() {
-    if (localStorage.getItem("roma_voted_2026")) {
-        alert("すでに投票はお済みです。");
-        return;
-    }
-
     if (!confirm("この内容で採点を送信しますか？")) return;
 
     try {
         document.getElementById("submit-btn").innerText = "送信中...";
         document.getElementById("submit-btn").disabled = true;
-
-        const ipRes = await fetch(IP_LOOKUP_URL);
-        const ipData = await ipRes.json();
-        const currentIp = ipData.ip;
 
         let allVotes = [];
         try {
@@ -121,17 +88,9 @@ async function submitRatings() {
             allVotes = [];
         }
 
-        const isIpVoted = allVotes.some(vote => vote._ip === currentIp);
-        if (isIpVoted) {
-            alert("このネットワークからはすでに投票されています。");
-            localStorage.setItem("roma_voted_2026", "true");
-            location.reload();
-            return;
-        }
-
-        const currentRatings = { _ip: currentIp };
+        const currentRatings = { _id: Date.now() }; // 識別用に時間を付与
         players.forEach((player, index) => {
-            currentRatings[player] = parseFloat(document.getElementById(`p-${index}`).value);
+            currentRatings[player.trim()] = parseFloat(document.getElementById(`p-${index}`).value);
         });
 
         allVotes.push(currentRatings);
@@ -142,8 +101,7 @@ async function submitRatings() {
             body: JSON.stringify(allVotes)
         });
 
-        localStorage.setItem("roma_voted_2026", "true");
-        alert("投票が完了しました！ご協力ありがとうございました。");
+        alert("投票が完了しました！管理者画面で反映を確認してください。");
         location.reload();
 
     } catch (e) {
@@ -188,13 +146,15 @@ async function loginAdmin() {
         document.getElementById("total-votes").innerText = allVotes.length;
 
         const totalScores = {};
-        players.forEach(p => totalScores[p] = { sum: 0, count: 0 });
+        players.forEach(p => totalScores[p.trim()] = { sum: 0, count: 0 });
 
         allVotes.forEach(vote => {
-            players.forEach(p => {
-                if (vote[p] !== undefined) {
-                    totalScores[p].sum += vote[p];
-                    totalScores[p].count += 1;
+            // 各投票データのキー（選手名）をループして、前後の余計な空白を排除しながら集計
+            Object.keys(vote).forEach(key => {
+                const cleanKey = key.trim();
+                if (totalScores[cleanKey] !== undefined) {
+                    totalScores[cleanKey].sum += vote[key];
+                    totalScores[cleanKey].count += 1;
                 }
             });
         });
@@ -203,9 +163,10 @@ async function loginAdmin() {
         tbody.innerHTML = "";
 
         players.forEach(p => {
-            const avg = totalScores[p].count > 0 ? (totalScores[p].sum / totalScores[p].count).toFixed(2) : "未投票";
+            const cleanP = p.trim();
+            const avg = totalScores[cleanP].count > 0 ? (totalScores[cleanP].sum / totalScores[cleanP].count).toFixed(2) : "未投票";
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${p}</td><td><strong>${avg}</strong></td>`;
+            tr.innerHTML = `<td>${cleanP}</td><td><strong>${avg}</strong></td>`;
             tbody.appendChild(tr);
         });
 
@@ -213,6 +174,6 @@ async function loginAdmin() {
         document.getElementById("admin-view-page").classList.remove("hidden");
 
     } catch (e) {
-        alert("データの読み込みに失敗しました。接続環境を確認してください。");
+        alert("データの読み込みに失敗しました。");
     }
 }
