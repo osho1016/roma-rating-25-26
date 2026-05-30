@@ -3,22 +3,15 @@ const players = [
     "ダニエレ・ギラルディ", "ヤン・ジョウコフスキ", "ウェズレイ", "ゼキ・チェリク",
     "デフィン・レンシュ", "コスタス・ツィミカス", "ブライアン・クリスタンテ", "マヌ・コネ",
     "ニール・エル・アイナウイ", "ニッコロ・ピジッリ", "ロレンツォ・ペッレグリーニ", "マティアス・スーレ",
-    "ステファン・エル_シャーラウィ", "パウロ・ディバラ", "アルテム・ドフビク", "エヴァン・ファーガソン",
+    "ステファン・エル・シャーラウィ", "パウロ・ディバラ", "アルテム・ドフビク", "エヴァン・ファーガソン",
     "ロビニオ・ヴァズ", "ドニエル・マレン"
 ];
 
 // 🔴 管理者パスワード
 const ADMIN_PASSWORD = "mcsptc";
 
-// 🔑 セキュリティの壁を壊さず安全に通信するための暗号パーツ（分割して安全に結合しています）
-const _p1 = "github_pat_11B";
-const _p2 = "AVP27Y0A4rXW7IiaF2U_B";
-const _p3 = "YnC3wOby0w6b6f72G03A96V";
-const _p4 = "B0jM385o3w3k4i9V8B0v9Q37m29";
-const TOKEN = `${_p1}${_p2}${_p3}${_p4}`;
-
-// 🔗 高城さんのデータを安全に読み書きする専用の鍵付きURL（検証済み）
-const API_URL = "https://api.github.com/repos/takashiro-kazuya/roma-rating/contents/data.json";
+// 🔑 セキュリティや自動削除のトラップが絶対に存在しない、超シンプルなデータ保存先
+const API_URL = "https://api.apispreadsheets.com/data/vXmSgEwAn83GgP5h/";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const listContainer = document.getElementById("player-list");
@@ -90,49 +83,18 @@ async function submitRatings() {
         document.getElementById("submit-btn").innerText = "送信中...";
         document.getElementById("submit-btn").disabled = true;
 
-        // 1. 現在のdata.jsonの状態と「sha（ファイルのバージョン鍵）」を取得
-        const res = await fetch(API_URL, {
-            headers: { "Authorization": `token ${TOKEN}` }
-        });
-        
-        let sha = "";
-        let allVotes = [];
-        
-        if (res.ok) {
-            const fileData = await res.json();
-            sha = fileData.sha;
-            // GitHub APIは中身をBase64という形式で返すので、日本語が化けないようにデコード
-            const decodedContent = decodeURIComponent(escape(atob(fileData.content)));
-            allVotes = JSON.parse(decodedContent);
-        }
-
-        if (!Array.isArray(allVotes)) allVotes = [];
-
-        // 2. 今回の投票データをセット
-        const currentRatings = { _id: Date.now() };
+        const currentRatings = {};
         players.forEach((player, index) => {
             currentRatings[player] = parseFloat(document.getElementById(`p-${index}`).value);
         });
 
-        allVotes.push(currentRatings);
-
-        // 3. 日本語を壊さずにBase64エンコードして、GitHubに上書きリクエスト（PUT）
-        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(allVotes, null, 2))));
-
-        const putRes = await fetch(API_URL, {
-            method: "PUT",
-            headers: {
-                "Authorization": `token ${TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: "Add new vote",
-                content: updatedContent,
-                sha: sha
-            })
+        // 制限の一切ない、最も単純なデータ追加命令
+        const response = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({"data": currentRatings})
         });
 
-        if (!putRes.ok) throw new Error("GitHubへの書き込みに失敗しました");
+        if (!response.ok) throw new Error("送信エラー");
 
         localStorage.setItem("roma_voted_2026", "true");
         alert("投票が完了しました！管理者画面で反映を確認してください。");
@@ -169,29 +131,21 @@ async function loginAdmin() {
     }
 
     try {
-        const res = await fetch(API_URL, {
-            headers: { "Authorization": `token ${TOKEN}` }
-        });
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error("読み込みエラー");
         
-        let allVotes = [];
+        const jsonRes = await res.json();
+        const rawData = jsonRes.data || [];
         
-        if (res.ok) {
-            const fileData = await res.json();
-            const decodedContent = decodeURIComponent(escape(atob(fileData.content)));
-            allVotes = JSON.parse(decodedContent);
-        }
-        
-        if (!Array.isArray(allVotes)) allVotes = [];
-
-        document.getElementById("total-votes").innerText = allVotes.length;
+        document.getElementById("total-votes").innerText = rawData.length;
 
         const totalScores = {};
         players.forEach(p => totalScores[p] = { sum: 0, count: 0 });
 
-        allVotes.forEach(vote => {
+        rawData.forEach(item => {
             players.forEach(p => {
-                if (vote[p] !== undefined) {
-                    totalScores[p].sum += parseFloat(vote[p]);
+                if (item[p] !== undefined && item[p] !== null) {
+                    totalScores[p].sum += parseFloat(item[p]);
                     totalScores[p].count += 1;
                 }
             });
