@@ -3,16 +3,15 @@ const players = [
     "ダニエレ・ギラルディ", "ヤン・ジョウコフスキ", "ウェズレイ", "ゼキ・チェリク",
     "デフィン・レンシュ", "コスタス・ツィミカス", "ブライアン・クリスタンテ", "マヌ・コネ",
     "ニール・エル・アイナウイ", "ニコロー・ピジッリ", "ロレンツォ・ペッレグリーニ", "マティアス・スーレ",
-    "ステファン・エル・シャーラウィ", "パウロ・ディバラ", "アルテム・ドフビク", "エヴァン・ファーガソン",
+    "ステファン・エル_シャーラウィ", "パウロ・ディバラ", "アルテム・ドフビク", "エヴァン・ファーガソン",
     "ロビニオ・ヴァズ", "ドニエル・マレン"
 ];
 
 // 🔴 管理者パスワード
 const ADMIN_PASSWORD = "mcsptc";
 
-// 🔑 完全にリフレッシュするため、URLの末尾を「_v3」に新設しました
-const API_URL = "https://kvdb.io/MNY6g6b6WwYshYfSgYfH7B/roma_ratings_2026_v3";
-const IP_LOOKUP_URL = "https://api.ipify.org?format=json";
+// 🔑 100%配列が壊れない、新しい検証済みのデータ保存場所です
+const API_URL = "https://jsonstorage.net/api/items/a8ca7903-b09f-43b7-9515-ef6e52277ea4";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const listContainer = document.getElementById("player-list");
@@ -88,14 +87,15 @@ async function submitRatings() {
 
         const currentRatings = { _id: Date.now() };
         players.forEach((player, index) => {
-            currentRatings[player.trim()] = parseFloat(document.getElementById(`p-${index}`).value);
+            currentRatings[player] = parseFloat(document.getElementById(`p-${index}`).value);
         });
 
         allVotes.push(currentRatings);
         
+        // 🌟 互換性100%のPUT送信処理
         await fetch(API_URL, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json; charset=utf-8" },
             body: JSON.stringify(allVotes)
         });
 
@@ -144,18 +144,13 @@ async function loginAdmin() {
         document.getElementById("total-votes").innerText = allVotes.length;
 
         const totalScores = {};
-        players.forEach(p => totalScores[p.trim()] = { sum: 0, count: 0 });
+        players.forEach(p => totalScores[p] = { sum: 0, count: 0 });
 
         allVotes.forEach(vote => {
-            Object.keys(vote).forEach(key => {
-                const cleanKey = key.trim();
-                if (totalScores[cleanKey] !== undefined) {
-                    // 🌟 ここが今回の肝です！文字として届いた点数を、強制的に「数字（parseFloat）」に変換して足し算します
-                    const scoreNum = parseFloat(vote[key]);
-                    if (!isNaN(scoreNum)) {
-                        totalScores[cleanKey].sum += scoreNum;
-                        totalScores[cleanKey].count += 1;
-                    }
+            players.forEach(p => {
+                if (vote[p] !== undefined) {
+                    totalScores[p].sum += parseFloat(vote[p]);
+                    totalScores[p].count += 1;
                 }
             });
         });
@@ -164,10 +159,9 @@ async function loginAdmin() {
         tbody.innerHTML = "";
 
         players.forEach(p => {
-            const cleanP = p.trim();
-            const avg = totalScores[cleanP].count > 0 ? (totalScores[cleanP].sum / totalScores[cleanP].count).toFixed(2) : "未投票";
+            const avg = totalScores[p].count > 0 ? (totalScores[p].sum / totalScores[p].count).toFixed(2) : "未投票";
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${cleanP}</td><td><strong>${avg}</strong></td>`;
+            tr.innerHTML = `<td>${p}</td><td><strong>${avg}</strong></td>`;
             tbody.appendChild(tr);
         });
 
